@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeAT 활용 실습</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Noto Sans KR) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .tab-btn.active {
+            border-bottom: 3px solid #2563eb;
+            color: #2563eb;
+            font-weight: 700;
+            background-color: #eff6ff;
+        }
+        /* 모든 메뉴의 상단 소개 영역을 웹앱 제작 메뉴와 같은 그라데이션 배너로 통일 */
+        #content-1 > .bg-white > div:first-child,
+        #content-2 > .bg-white > div:first-child,
+        #content-3 > .bg-white > div:first-child,
+        #content-4 > .bg-white > div:first-child,
+        #content-5 > .bg-white > div:first-child {
+            background: linear-gradient(110deg, #427a91 0%, #4050d7 100%);
+            color: #ffffff;
+            padding: 1.5rem;
+            border: 0;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        #content-1 > .bg-white > div:first-child h2,
+        #content-2 > .bg-white > div:first-child h2,
+        #content-3 > .bg-white > div:first-child h2,
+        #content-4 > .bg-white > div:first-child h2,
+        #content-5 > .bg-white > div:first-child h2 {
+            color: #ffffff;
+        }
+        #content-1 > .bg-white > div:first-child p,
+        #content-2 > .bg-white > div:first-child p,
+        #content-3 > .bg-white > div:first-child p,
+        #content-4 > .bg-white > div:first-child p,
+        #content-5 > .bg-white > div:first-child p {
+            color: #eff6ff;
+        }
+        #content-1 > .bg-white > div:first-child > div:first-child > span,
+        #content-2 > .bg-white > div:first-child > span,
+        #content-3 > .bg-white > div:first-child > span,
+        #content-4 > .bg-white > div:first-child > span,
+        #content-5 > .bg-white > div:first-child > span {
+            background: rgba(255,255,255,.2);
+            color: #ffffff;
+        }
+        /* Custom Scrollbar for Textareas */
+        textarea::-webkit-scrollbar {
+            width: 6px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-800">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 ease-in-out bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3 pointer-events-none">
+        <i id="toast-icon" class="fas fa-check-circle text-green-400 text-lg"></i>
+        <span id="toast-msg" class="font-medium text-sm">알림 메시지</span>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col py-3">
+                <!-- Title & Badge -->
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="p-2 bg-blue-600 text-white rounded-lg">
+                        <i class="fas fa-robot text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-slate-900 leading-tight">BeAT 활용 실습</h1>
+                        <p class="text-xs text-slate-500">생성형 AI 윤리 및 프롬프트 실습 포털</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs (6 Buttons Side-by-Side) -->
+                <nav class="flex overflow-x-auto space-x-1 sm:space-x-2 no-scrollbar py-2 border-t border-slate-100 w-full">
+                    <button onclick="switchTab(1)" id="tab-1" class="tab-btn active shrink-0 px-3 py-3 text-xs sm:text-sm font-medium rounded-t-lg transition-colors duration-150 flex items-center gap-1.5 text-slate-600 hover:text-blue-600">
+                        <i class="fas fa-shield-alt text-blue-500"></i>
+                        <span>1. AI 윤리 (OX)</span>
+                        <span id="quiz-badge" class="hidden ml-1 px-1.5 py-0.5 text-[10px] bg-green-100 text-green-700 font-bold rounded-full">완료</span>
+                    </button>
+                    <button onclick="switchTab(2)" id="tab-2" class="tab-btn shrink-0 px-3 py-3 text-xs sm:text-sm font-medium rounded-t-lg transition-colors duration-150 flex items-center gap-1.5 text-slate-600 hover:text-blue-600">
+                        <i class="fas fa-compass text-indigo-500"></i>
+                        <span>2. 진로·진학</span>
+                        <span id="p2-badge" class="hidden ml-1 px-1.5 py-0.5 text-[10px] bg-green-100 text-green-700 font-bold rounded-full">완료</span>
+                    </button>
+                    <button onclick="switchTab(3)" id="tab-3" class="tab-btn shrink-0 px-3 py-3 text-xs sm:text-sm font-medium rounded-t-lg transition-colors duration-150 flex items-center gap-1.5 text-slate-600 hover:text-blue-600">
+                        <i class="fas fa-book-open text-emerald-500"></i>
+                        <span>3. 교과학습</span>
+                        <span id="p3-badge" class="hidden ml-1 px-1.5 py-0.5 text-[10px] bg-green-100 text-green-700 font-bold rounded-full">완료</span>
+                    </button>
+                    <button onclick="switchTab(4)" id="tab-4" class="tab-btn shrink-0 px-3 py-3 text-xs sm:text-sm font-medium rounded-t-lg transition-colors duration-150 flex items-center gap-1.5 text-slate-600 hover:text-blue-600">
+                        <i class="fas fa-palette text-amber-500"></i>
+                        <span>4. 교과외 활동</span>
+                        <span id="p4-badge" class="hidden ml-1 px-1.5 py-0.5 text-[10px] bg-green-100 text-green-700 font-bold rounded-full">완료</span>
+                    </button>
+                    <button onclick="switchTab(5)" id="tab-5" class="tab-btn shrink-0 px-3 py-3 text-xs sm:text-sm font-medium rounded-t-lg transition-colors duration-150 flex items-center gap-1.5 text-slate-600 hover:text-blue-600">
+                        <i class="fas fa-user-gear text-purple-500"></i>
+                        <span>5. AI 에이전트</span>
+                        <span id="p5-badge" class="hidden ml-1 px-1.5 py-0.5 text-[10px] bg-green-100 text-green-700 font-bold rounded-full">완료</span>
+                    </button>
+                    <button onclick="switchTab(6)" id="tab-6" class="tab-btn shrink-0 px-3 py-3 text-xs sm:text-sm font-medium rounded-t-lg transition-colors duration-150 flex items-center gap-1.5 text-slate-600 hover:text-blue-600">
+                        <i class="fas fa-laptop-code text-cyan-600"></i>
+                        <span>6. 웹앱 제작(선택)</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Notice Banner for Prompt Sections -->
+    <div id="prompt-notice-banner" class="bg-amber-50 border-b border-amber-200 hidden">
+        <div class="max-w-7xl mx-auto px-4 py-2 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs sm:text-sm text-amber-800 gap-2">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle text-amber-600 shrink-0"></i>
+                <span><strong>프롬프트 작성 규칙:</strong> AI 결과는 '초안'일 뿐입니다. 개인정보 입력 금지 &amp; 반드시 도서관/학술 사이트(RISS, DBpia 등)에서 팩트체크하세요!</span>
+            </div>
+            <div class="text-xs bg-amber-200 text-amber-900 px-2 py-0.5 rounded font-semibold shrink-0">
+                원칙: [역할 - 상황 - 요청 - 조건]
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: AI 윤리 및 생성형 AI 올바른 사용법 (OX Quiz) -->
+        <section id="content-1" class="tab-content">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 gap-4">
+                    <div>
+                        <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-md mb-2">실습 1단계</span>
+                        <h2 class="text-xl font-bold text-slate-900">AI 윤리 및 생성형 AI 올바른 사용법 OX 퀴즈</h2>
+                        <p class="text-slate-600 text-sm mt-1">올바른 AI 사용자가 되기 위한 윤리 지식을 점검해 봅시다. (각 10점, 총 100점)</p>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-200">
+                        <i class="fas fa-trophy text-amber-500 text-2xl"></i>
+                        <div>
+                            <div class="text-xs text-slate-500">현재 점수</div>
+                            <div id="quiz-score-display" class="text-lg font-extrabold text-slate-800">-- / 100</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Form -->
+                <form id="quiz-form" class="mt-6 space-y-6">
+                    <div id="quiz-container" class="space-y-6">
+                        <!-- Questions will be rendered by JS -->
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-200 flex justify-end">
+                        <button type="button" onclick="submitQuiz()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-base">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>퀴즈 제출하기</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Feedback Section after submission -->
+                <div id="quiz-result-box" class="mt-8 p-6 bg-slate-50 border border-slate-200 rounded-2xl hidden">
+                    <h3 class="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-blue-600"></i> 제출 결과 피드백
+                    </h3>
+                    <p id="quiz-result-summary" class="text-sm text-slate-700 mb-4"></p>
+                    <div class="p-4 bg-white rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-600">
+                        💡 <strong>알림:</strong> 모든 문항의 해설을 위 문제 목록에서 확인할 수 있습니다.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: 진로·진학 -->
+        <section id="content-2" class="tab-content hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="mb-6 pb-4 border-b border-slate-100">
+                    <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-indigo-100 text-indigo-700 rounded-md mb-2">실습 2단계</span>
+                    <h2 class="text-xl font-bold text-slate-900">🎯 [진로·진학] 탐구 및 진로 설계</h2>
+                    <p class="text-slate-600 text-sm mt-1">희망 전공 관련 도서/논문 탐색, 진로 관련 세부 탐구 주제 도출, 입시/진로 질의응답을 위한 프롬프트입니다.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Form Controls -->
+                    <div class="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fas fa-edit text-indigo-600"></i> 내 맞춤 정보 입력하기
+                        </h3>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">희망 전공/학과</label>
+                            <input type="text" id="p2-major" value="컴퓨터공학과" oninput="updatePrompt(2)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">학년</label>
+                            <input type="text" id="p2-grade" value="2학년" oninput="updatePrompt(2)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">관심 분야</label>
+                            <input type="text" id="p2-interest" value="AI와 의료 데이터 활용" oninput="updatePrompt(2)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    <!-- Prompt Display & Copy -->
+                    <div class="flex flex-col">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <i class="fas fa-terminal text-slate-500"></i> 완성된 프롬프트 폼
+                            </label>
+                            <button onclick="copyPrompt(2)" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow transition-all flex items-center gap-1.5">
+                                <i class="fas fa-copy"></i>
+                                <span>프롬프트 복사하기</span>
+                            </button>
+                        </div>
+                        <textarea id="p2-output" readonly class="w-full flex-1 min-h-[280px] p-4 bg-slate-900 text-slate-100 font-mono text-xs sm:text-sm rounded-xl leading-relaxed resize-none focus:outline-none shadow-inner"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: 교과학습 -->
+        <section id="content-3" class="tab-content hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="mb-6 pb-4 border-b border-slate-100">
+                    <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-md mb-2">실습 3단계</span>
+                    <h2 class="text-xl font-bold text-slate-900">📚 [교과학습] 개념 이해 및 문제 해결</h2>
+                    <p class="text-slate-600 text-sm mt-1">어려운 교과 개념을 쉬운 비유로 이해하고 오답 원인을 분석하거나 비판적 사고력을 확장하는 프롬프트입니다.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Form Controls -->
+                    <div class="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fas fa-edit text-emerald-600"></i> 내 맞춤 정보 입력하기
+                        </h3>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">과목명</label>
+                            <input type="text" id="p3-subject" value="통합과학" oninput="updatePrompt(3)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">개념명</label>
+                            <input type="text" id="p3-concept" value="세포 호흡과 광합성의 차이점" oninput="updatePrompt(3)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">원하는 비유</label>
+                            <input type="text" id="p3-analogy" value="일상생활 속 예시" oninput="updatePrompt(3)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+
+                    <!-- Prompt Display & Copy -->
+                    <div class="flex flex-col">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <i class="fas fa-terminal text-slate-500"></i> 완성된 프롬프트 폼
+                            </label>
+                            <button onclick="copyPrompt(3)" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow transition-all flex items-center gap-1.5">
+                                <i class="fas fa-copy"></i>
+                                <span>프롬프트 복사하기</span>
+                            </button>
+                        </div>
+                        <textarea id="p3-output" readonly class="w-full flex-1 min-h-[280px] p-4 bg-slate-900 text-slate-100 font-mono text-xs sm:text-sm rounded-xl leading-relaxed resize-none focus:outline-none shadow-inner"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: 교과외 활동 -->
+        <section id="content-4" class="tab-content hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="mb-6 pb-4 border-b border-slate-100">
+                    <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-md mb-2">실습 4단계</span>
+                    <h2 class="text-xl font-bold text-slate-900">🎨 [교과외 활동] 동아리·자율·봉사·탐구 프로젝트</h2>
+                    <p class="text-slate-600 text-sm mt-1">동아리 기획안 작성, 카드뉴스/콘티 구상, 토론 입론서 및 반론 대비 작성을 지원하는 프롬프트입니다.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Form Controls -->
+                    <div class="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fas fa-edit text-amber-600"></i> 내 맞춤 정보 입력하기
+                        </h3>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">활동 종류 / 동아리명</label>
+                            <input type="text" id="p4-club" value="유기동물 보호 동아리" oninput="updatePrompt(4)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">활동 목표</label>
+                            <input type="text" id="p4-goal" value="교내 잔반 줄이기 캠페인" oninput="updatePrompt(4)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">홍보 매체</label>
+                            <select id="p4-media" onchange="updatePrompt(4)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                <option value="카드뉴스 4컷 (주요 핵심 요약용)" selected>📸 카드뉴스 4컷 (주요 핵심 요약용)</option>
+                                <option value="카드뉴스 6컷 (스토리텔링 포함)">📸 카드뉴스 6컷 (스토리텔링 포함)</option>
+                                <option value="인스타그램 릴스 / 숏폼 30초 스크립트">🎬 인스타그램 릴스 / 숏폼 30초 스크립트</option>
+                                <option value="교내 홍보 포스터 헤드카피 & 메인 문구">🖼️ 교내 홍보 포스터 헤드카피 &amp; 메인 문구</option>
+                                <option value="학교 방송 / 아침 조회 안내 원고 (1분)">🎙️ 학교 방송 / 아침 조회 안내 원고 (1분)</option>
+                                <option value="학급 커뮤니티 / 블로그 게시물 원고">📝 학급 커뮤니티 / 블로그 게시물 원고</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Prompt Display & Copy -->
+                    <div class="flex flex-col">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <i class="fas fa-terminal text-slate-500"></i> 완성된 프롬프트 폼
+                            </label>
+                            <button onclick="copyPrompt(4)" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow transition-all flex items-center gap-1.5">
+                                <i class="fas fa-copy"></i>
+                                <span>프롬프트 복사하기</span>
+                            </button>
+                        </div>
+                        <textarea id="p4-output" readonly class="w-full flex-1 min-h-[280px] p-4 bg-slate-900 text-slate-100 font-mono text-xs sm:text-sm rounded-xl leading-relaxed resize-none focus:outline-none shadow-inner"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: 나만의 학교생활 맞춤형 AI 에이전트 -->
+        <section id="content-5" class="tab-content hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="mb-6 pb-4 border-b border-slate-100">
+                    <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-purple-100 text-purple-700 rounded-md mb-2">실습 5단계</span>
+                    <h2 class="text-xl font-bold text-slate-900">🤖 [나만의 맞춤형 AI 에이전트] 설계</h2>
+                    <p class="text-slate-600 text-sm mt-1">나에게 필요한 학교생활 보조 AI를 직접 만들고, 역할·기능·규칙·양식을 정해보는 시스템 프롬프트입니다.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Form Controls -->
+                    <div class="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fas fa-sliders-h text-purple-600"></i> 에이전트 상세 설계하기
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">에이전트 이름</label>
+                                <input type="text" id="p5-agentname" value="스마트 플래너 '알피'" oninput="updatePrompt(5)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">학년</label>
+                                <input type="text" id="p5-grade" value="2학년" oninput="updatePrompt(5)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">성격 및 톤앤매너</label>
+                            <input type="text" id="p5-personality" value="친절하지만 꼼꼼하고 현실적인 피드백을 주는 다정한 선배" oninput="updatePrompt(5)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">현재 겪고 있는 문제점</label>
+                            <input type="text" id="p5-problem" value="시험 기간에 과목별 공부 시간 배분을 잘 못하고 딴짓을 자주 함" oninput="updatePrompt(5)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">핵심 기능 1</label>
+                            <input type="text" id="p5-f1" value="나의 하루 일과와 시험 범위를 바탕으로 한 과목별 현실적인 타임테이블 작성" oninput="updatePrompt(5)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">핵심 기능 2</label>
+                            <input type="text" id="p5-f2" value="공부 중 집중력이 떨어질 때 시도할 수 있는 5분 루틴 제시" oninput="updatePrompt(5)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">핵심 기능 3</label>
+                            <input type="text" id="p5-f3" value="과목별 학습 우선순위 점검 질문 제공" oninput="updatePrompt(5)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                    </div>
+
+                    <!-- Prompt Display & Copy -->
+                    <div class="flex flex-col">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <i class="fas fa-terminal text-slate-500"></i> 완성된 에이전트 프롬프트 폼
+                            </label>
+                            <button onclick="copyPrompt(5)" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg shadow transition-all flex items-center gap-1.5">
+                                <i class="fas fa-copy"></i>
+                                <span>프롬프트 복사하기</span>
+                            </button>
+                        </div>
+                        <textarea id="p5-output" readonly class="w-full flex-1 min-h-[350px] p-4 bg-slate-900 text-slate-100 font-mono text-xs sm:text-sm rounded-xl leading-relaxed resize-none focus:outline-none shadow-inner"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: 웹앱 제작 -->
+        <section id="content-6" class="tab-content hidden">
+            <div class="space-y-6">
+                <div class="rounded-2xl bg-gradient-to-r from-cyan-700 to-blue-700 text-white p-6 shadow-sm">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div><span class="text-xs font-semibold bg-white/20 rounded-full px-3 py-1">PROMPT LAB</span>
+                            <h2 class="text-2xl font-bold mt-3">🛠️ 나만의 학교생활 웹앱 만들기</h2>
+                            <p class="text-sm text-cyan-50 mt-2">아이디어를 고르고 프롬프트를 작성해 미리보기까지 확인해 보세요.</p></div>
+                        <div class="bg-white/10 rounded-xl p-4 min-w-40"><div class="text-xs text-cyan-100">나의 레벨</div><div id="webapp-level" class="text-xl font-bold mt-1">🌱 초보 코더</div><div class="text-xs text-cyan-100 mt-2">프롬프트 실습으로 성장해요</div></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg">1. 시나리오 선택</h3><p class="text-sm text-slate-500 mt-1">만들고 싶은 학교생활 도구를 골라요.</p>
+                        <div class="grid grid-cols-2 gap-2 mt-4">
+                            <button onclick="selectWebScenario('lunch')" class="web-scenario p-3 border rounded-lg text-sm text-left hover:border-cyan-500" data-scenario="lunch">🍱 밥 시간 알리미</button>
+                            <button onclick="selectWebScenario('exam')" class="web-scenario p-3 border rounded-lg text-sm text-left hover:border-cyan-500" data-scenario="exam">📅 시험 D-Day</button>
+                            <button onclick="selectWebScenario('seating')" class="web-scenario p-3 border rounded-lg text-sm text-left hover:border-cyan-500" data-scenario="seating">🎲 자리 배치 추첨기</button>
+                            <button onclick="selectWebScenario('checklist')" class="web-scenario p-3 border rounded-lg text-sm text-left hover:border-cyan-500" data-scenario="checklist">✅ 수행평가 체크리스트</button>
+                        </div>
+                        <h3 class="font-bold text-lg mt-6">2. 프롬프트 작성</h3>
+                        <div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900"><strong>작성 팁</strong><ul class="list-disc ml-4 mt-1 space-y-1"><li>역할을 정해요: “너는 친절한 웹앱 개발자야.”</li><li>조건을 구체적으로 써요.</li><li>출력 형식과 디자인을 지정해요.</li></ul></div>
+                        <textarea id="webapp-prompt" rows="8" class="w-full mt-3 p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="만들고 싶은 웹앱을 자세히 설명하세요."></textarea>
+                        <div class="flex flex-wrap gap-2 mt-3"><button onclick="buildWebPreview()" class="px-4 py-2 bg-cyan-700 hover:bg-cyan-800 text-white rounded-lg text-sm font-semibold">미리보기 만들기</button><button onclick="improveWebPrompt()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold">프롬프트 힌트</button><button onclick="copyWebPrompt()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold"><i class="fas fa-copy mr-1"></i>프롬프트 복사</button></div>
+                        <div id="webapp-feedback" class="mt-3 text-sm bg-blue-50 text-blue-900 p-3 rounded-lg" aria-live="polite">시나리오를 선택하면 시작 프롬프트가 자동으로 채워집니다.</div>
+                    </div>
+                    <div class="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-5">
+                        <div class="flex items-center justify-between gap-3"><div><h3 class="font-bold text-lg">3. 라이브 샌드박스</h3><p class="text-sm text-slate-500 mt-1">프롬프트에 맞춘 예시 UI를 확인해요.</p></div><button onclick="toggleWebCode()" class="text-xs border border-slate-300 rounded-lg px-3 py-2">코드 보기</button></div>
+                        <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 min-h-64"><div class="max-w-sm mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"><div class="bg-cyan-700 text-white px-4 py-3"><div class="text-xs opacity-80">SCHOOL MINI APP</div><div id="web-preview-title" class="font-bold text-lg mt-1">나의 학교생활 도우미</div></div><div id="web-preview-body" class="p-4 text-sm text-slate-700"><p>왼쪽에서 시나리오를 선택하고 ‘미리보기 만들기’를 눌러보세요.</p></div></div></div>
+                        <pre id="webapp-code" class="hidden mt-3 p-4 rounded-xl bg-slate-900 text-green-200 text-xs overflow-x-auto whitespace-pre-wrap"></pre>
+                        <div class="mt-4"><h4 class="font-bold text-sm">프롬프트 레시피 북</h4><div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3"><button onclick="useWebRecipe('일정 관리 도우미','시험 날짜와 과목을 입력하면 D-Day와 하루 공부 계획을 카드 형태로 보여줘. 모바일에서도 읽기 쉬운 디자인으로 만들어줘.')" class="text-left p-3 bg-slate-50 hover:bg-cyan-50 rounded-lg border border-slate-200"><span class="text-xs text-cyan-700 font-bold">시간표/일정</span><div class="text-sm font-semibold mt-1">시험 D-Day 플래너</div></button><button onclick="useWebRecipe('암기 카드 앱','교과 개념과 설명을 입력하면 앞면에는 질문, 뒷면에는 답이 나오는 플래시카드를 만들어줘. 정답 확인 버튼을 넣어줘.')" class="text-left p-3 bg-slate-50 hover:bg-cyan-50 rounded-lg border border-slate-200"><span class="text-xs text-cyan-700 font-bold">학습/암기</span><div class="text-sm font-semibold mt-1">개념 암기 카드</div></button><button onclick="useWebRecipe('학급 체크리스트','할 일 추가, 완료 체크, 남은 항목 수 표시 기능이 있는 수행평가 체크리스트를 만들어줘. 깔끔한 카드형 디자인으로 보여줘.')" class="text-left p-3 bg-slate-50 hover:bg-cyan-50 rounded-lg border border-slate-200"><span class="text-xs text-cyan-700 font-bold">학급/동아리</span><div class="text-sm font-semibold mt-1">수행평가 체크리스트</div></button></div><p class="text-xs text-slate-500 mt-3">좋은 프롬프트는 역할·목표·조건·출력 형식을 포함합니다. 예: “학교생활 도구를 만드는 개발자 역할로, 모바일 친화적이고 버튼이 작동하는 체크리스트를 HTML 한 파일로 작성해줘.”</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            고등학생을 위한 생성형 AI 올바른 사용 실습 웹사이트 &copy; 2026. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // 1. Quiz Data
+        const quizData = [
+            {
+                q: "생성형 AI가 제공하는 답변은 많은 데이터를 기반으로 생성되므로, 연도나 출처 등의 사실관계는 별도로 검증하지 않고 믿어도 된다.",
+                a: "X",
+                exp: "AI는 그럴듯한 문장을 만드는 데 특화되어 있어 가짜 사실을 지어내는 '환각 현상'이 발생할 수 있습니다. 반드시 2차 팩트체크가 필요합니다."
+            },
+            {
+                q: "친구의 고민을 해결하기 위해 친구의 이름, 학교, 개인적인 사연을 AI 프롬프트에 자세히 입력하여 조언을 구하는 것은 윤리적으로 문제될 것이 없다.",
+                a: "X",
+                exp: "타인의 개인정보를 프롬프트에 입력하는 것은 사생활 침해 및 정보 유출 위험이 있습니다. 필요시 익명이나 가명을 사용해야 합니다."
+            },
+            {
+                q: "과제 작성 시 생성형 AI가 작성해 준 문장을 그대로 복사해서 제출하더라도, 작성 주제가 나의 아이디어였다면 표절이나 부정행위에 해당하지 않는다.",
+                a: "X",
+                exp: "AI 답변을 그대로 복사·붙여넣기(Copy & Paste)하여 제출하는 것은 표절입니다. 참고 자료로 활용하되 나만의 언어로 재구성해야 합니다."
+            },
+            {
+                q: "AI는 인간이 작성한 데이터를 학습하기 때문에, 사회에 존재하는 성별·인종·지역 등에 대한 편견이나 차별적 시각이 AI 답변에 그대로 반영될 수 있다.",
+                a: "O",
+                exp: "AI는 학습 데이터의 편향을 그대로 학습하므로 사회적 편견이나 차별적 시각을 재현하거나 증폭할 수 있습니다."
+            },
+            {
+                q: "학교 수행평가나 보고서 작성 시 생성형 AI의 도움을 받았다면, 어떤 AI 도구를 어떻게 활용했는지 과제에 명시하는 것이 올바른 학문적 태도이다.",
+                a: "O",
+                exp: "AI 활용 사실, 사용 목적, 도구명을 투명하게 밝히는 것이 바람직한 학문적 정직성입니다."
+            },
+            {
+                q: "AI로 생성한 이미지나 음악은 기존 창작자의 화풍이나 곡조를 참고했더라도 어떠한 경우에도 저작권 및 초상권 침해 문제가 발생하지 않는다.",
+                a: "X",
+                exp: "타인의 고유 화풍을 무단 모방하거나 얼굴을 합성(딥페이크)하는 행위는 저작권 및 초상권 침해로 법적 문제가 발생할 수 있습니다."
+            },
+            {
+                q: "AI가 존재하지 않는 사건이나 가짜 정보를 마치 사실인 것처럼 그럴듯하게 답하는 현상을 '환각(Hallucination)' 현상이라고 한다.",
+                a: "O",
+                exp: "환각 현상은 생성형 AI의 대표적인 기술적 한계이자 주의해야 할 점입니다."
+            },
+            {
+                q: "자율주행차 사고처럼 AI 시스템이 사회적 피해를 입혔을 때, 사고의 책임 소재나 법적 기준을 정하는 것도 AI 윤리의 주요 논의 주제 중 하나이다.",
+                a: "O",
+                exp: "AI 오작동 및 사고 발생 시 개발자, 사용자, 기업 간의 책임 범위를 구획하는 것은 AI 윤리의 핵심 분야입니다."
+            },
+            {
+                q: "비공개 시험 문제나 교사가 배포한 저작권이 있는 수업 자료를 AI 학습용 프롬프트에 자유롭게 첨부해도 보안상 아무런 문제가 없다.",
+                a: "X",
+                exp: "프롬프트에 입력된 데이터는 서버에 저장되거나 추가 학습 모델에 이용될 수 있으므로, 비공개·저작권 자료 입력은 금지됩니다."
+            },
+            {
+                q: "AI가 생성해 낸 최종 결과물(과제, 보고서, 생성 이미지 등)에 대한 법적·도덕적 최종 책임은 AI를 개발한 회사나 AI 자체가 아니라 사용자(학생 본인)에게 있다.",
+                a: "O",
+                exp: "AI는 조력자일 뿐이므로, AI의 답변을 검증하고 최종적으로 활용하여 제출한 책임은 오롯이 사용자에게 있습니다."
+            }
+        ];
+
+        // Track completion status
+        const practiceStatus = {
+            1: false, // Quiz Done
+            2: false, // Prompt 2 Copied
+            3: false, // Prompt 3 Copied
+            4: false, // Prompt 4 Copied
+            5: false  // Prompt 5 Copied
+        };
+
+        // User answers for quiz
+        const userAnswers = Array(10).fill(null);
+
+        // Initialize App
+        window.onload = function() {
+            renderQuiz();
+            updatePrompt(2);
+            updatePrompt(3);
+            updatePrompt(4);
+            updatePrompt(5);
+        };
+
+        // Toast Message Helper
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = message;
+            if(isSuccess) {
+                toastIcon.className = "fas fa-check-circle text-green-400 text-lg";
+            } else {
+                toastIcon.className = "fas fa-exclamation-circle text-amber-400 text-lg";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Tab Switch Logic
+        function switchTab(tabNum) {
+            // Hide all tab contents
+            for (let i = 1; i <= 6; i++) {
+                const content = document.getElementById(`content-${i}`);
+                const btn = document.getElementById(`tab-${i}`);
+                if (content) content.classList.add('hidden');
+                if (btn) btn.classList.remove('active');
+            }
+
+            // Show selected tab content
+            const activeContent = document.getElementById(`content-${tabNum}`);
+            const activeBtn = document.getElementById(`tab-${tabNum}`);
+            if (activeContent) activeContent.classList.remove('hidden');
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Banner visibility (Tabs 2 ~ 5 show prompt notice banner)
+            const banner = document.getElementById('prompt-notice-banner');
+            if (tabNum >= 2 && tabNum <= 5) {
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        // Web app creation lab
+        const webScenarios = {
+            lunch: { title: '🍱 밥 시간 알리미', prompt: '너는 친절한 웹앱 개발자야. 점심 메뉴와 알레르기 안내를 카드로 보여주는 학교 급식 알리미를 만들어줘. 메뉴, 날짜, 알레르기 유의 문구를 구분하고 모바일에서도 보기 쉬운 디자인으로 구성해줘.', body: '<p class="text-xs text-slate-500">오늘의 급식</p><h4 class="text-xl font-bold mt-1">🍚 오늘의 점심 메뉴</h4><ul class="list-disc ml-5 mt-3"><li>밥과 따뜻한 국</li><li>오늘의 메인 메뉴</li><li>채소 반찬과 과일</li></ul><p class="mt-4 p-3 bg-amber-50 rounded-lg text-amber-800 text-xs">알레르기 정보는 학교에서 제공한 공식 메뉴표를 확인하세요.</p>' },
+            exam: { title: '📅 시험 D-Day 플래너', prompt: '너는 학습 플래너 웹앱 개발자야. 시험 날짜와 과목을 입력하면 D-Day와 오늘 할 공부 목록을 보여주는 앱을 만들어줘. 날짜 카드, 과목별 체크리스트, 진행률을 표시하고 차분한 파란색 디자인을 사용해줘.', body: '<p class="text-xs text-slate-500">다가오는 시험</p><h4 class="text-2xl font-bold mt-1">D-14</h4><p class="text-sm mt-1">시험일까지 남은 날짜 예시</p><div class="mt-4 space-y-2"><label class="flex gap-2"><input type="checkbox"> 수학 개념 복습</label><label class="flex gap-2"><input type="checkbox"> 영어 단어 암기</label><label class="flex gap-2"><input type="checkbox"> 과학 오답 정리</label></div>' },
+            seating: { title: '🎲 자리 배치 추첨기', prompt: '너는 학급 활동 웹앱 개발자야. 학생 이름을 입력하고 추첨 버튼을 누르면 무작위 자리 배치를 보여주는 앱을 만들어줘. 결과를 표로 표시하고 다시 추첨 버튼을 넣어줘. 개인정보는 저장하지 않는다는 안내도 표시해줘.', body: '<h4 class="font-bold">자리 배치 예시</h4><div class="grid grid-cols-3 gap-2 mt-3 text-center">' + ['학생 A','학생 B','학생 C','학생 D','학생 E','학생 F'].map(n=>'<div class="p-3 bg-cyan-50 rounded-lg">'+n+'</div>').join('') + '</div><p class="text-xs text-slate-500 mt-3">예시 결과입니다. 실제 추첨 기능은 생성한 코드에서 구현해야 해요.</p>' },
+            checklist: { title: '✅ 수행평가 체크리스트', prompt: '너는 생산성 웹앱 개발자야. 수행평가 할 일을 추가하고 완료 여부를 체크할 수 있는 체크리스트를 만들어줘. 완료된 항목 수와 남은 항목 수를 보여주고, 깔끔한 카드형 디자인으로 구성해줘.', body: '<h4 class="font-bold">이번 주 할 일</h4><div class="mt-3 space-y-3"><label class="flex gap-2"><input type="checkbox"> 자료 조사하기</label><label class="flex gap-2"><input type="checkbox"> 발표 자료 만들기</label><label class="flex gap-2"><input type="checkbox"> 발표 연습하기</label></div><p class="mt-4 text-xs text-cyan-800 bg-cyan-50 rounded-lg p-3">완료한 항목을 체크하며 진행 상황을 관리해요.</p>' }
+        };
+        let selectedWebScenario = 'lunch';
+        let webappXp = 1;
+        function selectWebScenario(key) {
+            selectedWebScenario = key;
+            const item = webScenarios[key];
+            document.getElementById('webapp-prompt').value = item.prompt;
+            document.querySelectorAll('.web-scenario').forEach(btn => {
+                btn.classList.toggle('border-cyan-600', btn.dataset.scenario === key);
+                btn.classList.toggle('bg-cyan-50', btn.dataset.scenario === key);
+            });
+            document.getElementById('webapp-feedback').textContent = '시나리오를 선택했어요. 역할, 구체적인 조건, 출력 형식이 포함되어 있는지 확인해 보세요.';
+            document.getElementById('web-preview-title').textContent = item.title;
+            document.getElementById('web-preview-body').innerHTML = item.body;
+        }
+        function buildWebPreview() {
+            const prompt = document.getElementById('webapp-prompt').value.trim();
+            const feedback = document.getElementById('webapp-feedback');
+            if (!prompt) { feedback.textContent = '먼저 프롬프트를 입력하거나 시나리오를 선택해 주세요.'; return; }
+            const hasRole = /너는|역할|개발자|전문가/.test(prompt);
+            const hasCondition = /조건|기능|버튼|입력|체크|날짜|메뉴/.test(prompt);
+            const hasFormat = /카드|표|목록|디자인|모바일|HTML|화면/.test(prompt);
+            const notes = [];
+            if (!hasRole) notes.push('역할을 지정해 보세요.');
+            if (!hasCondition) notes.push('필요한 기능이나 조건을 구체적으로 써보세요.');
+            if (!hasFormat) notes.push('카드·표·목록 등 출력 형식이나 디자인을 정해보세요.');
+            feedback.textContent = notes.length ? '좋은 시작이에요! 개선 팁: ' + notes.join(' ') : '좋아요! 역할·기능 조건·출력 형식이 포함되어 있어요. 아래는 선택한 시나리오의 예시 미리보기입니다.';
+            const item = webScenarios[selectedWebScenario];
+            document.getElementById('web-preview-title').textContent = item.title;
+            document.getElementById('web-preview-body').innerHTML = item.body;
+            document.getElementById('webapp-code').textContent = '<!-- 예시 구조: 실제 웹앱 코드 생성은 AI 도구에서 프롬프트를 실행해야 합니다. -->\n<section class="app-card">\n  <h1>' + item.title + '</h1>\n  <p>사용자가 입력한 프롬프트를 바탕으로 기능을 설계합니다.</p>\n  <button>시작하기</button>\n</section>';
+            webappXp = Math.min(4, webappXp + 1);
+            const xpBar = document.getElementById('webapp-xp-bar');
+            const xpText = document.getElementById('webapp-xp-text');
+            if (xpBar) xpBar.style.width = (webappXp * 25) + '%';
+            if (xpText) xpText.textContent = '경험치 ' + webappXp + ' / 4';
+            document.getElementById('webapp-level').textContent = webappXp >= 4 ? '🏆 프롬프트 마스터' : webappXp >= 2 ? '💡 프롬프트 탐험가' : '🌱 초보 코더';
+        }
+        function improveWebPrompt() {
+            document.getElementById('webapp-feedback').textContent = '힌트: “너는 [역할]이야. [누가 사용할지]를 위해 [핵심 기능]을 만들고, [색상/카드/표 등 출력 형식]으로 보여줘. 모바일에서도 사용하기 쉽게 해줘.”처럼 구체적으로 작성해 보세요.';
+        }
+        async function copyWebPrompt() {
+            const field = document.getElementById('webapp-prompt');
+            const prompt = field ? field.value : '';
+            if (!prompt.trim()) {
+                showToast('먼저 프롬프트를 작성하거나 시나리오를 선택해 주세요.', false);
+                if (field) field.focus();
+                return;
+            }
+
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(prompt);
+                    showToast('웹앱 제작 프롬프트가 클립보드에 복사되었습니다!');
+                    return;
+                }
+            } catch (err) {
+            }
+
+            let temp = null;
+            try {
+                temp = document.createElement('textarea');
+                temp.value = prompt;
+                temp.setAttribute('readonly', '');
+                temp.style.position = 'fixed';
+                temp.style.left = '-9999px';
+                temp.style.top = '0';
+                temp.style.opacity = '0';
+                document.body.appendChild(temp);
+                temp.focus();
+                temp.select();
+                temp.setSelectionRange(0, temp.value.length);
+                const copied = document.execCommand('copy');
+                if (!copied) throw new Error('execCommand copy returned false');
+                showToast('웹앱 제작 프롬프트가 클립보드에 복사되었습니다!');
+            } catch (err) {
+                if (field) {
+                    field.focus();
+                    field.select();
+                    field.setSelectionRange(0, field.value.length);
+                }
+                showToast('자동 복사가 차단되었습니다. 선택된 프롬프트에서 Ctrl+C를 눌러 복사해 주세요.', false);
+            } finally {
+                if (temp && temp.parentNode) temp.parentNode.removeChild(temp);
+            }
+        }
+
+        function useWebRecipe(title, recipe) {
+            selectedWebScenario = title.includes('암기') ? 'checklist' : title.includes('학급') ? 'checklist' : 'exam';
+            document.getElementById('webapp-prompt').value = '너는 ' + title + '을 만드는 웹앱 개발자야. ' + recipe;
+            document.getElementById('webapp-feedback').textContent = '레시피를 프롬프트 입력창에 넣었어요. 필요에 맞게 수정한 뒤 미리보기를 만들어 보세요.';
+        }
+        function toggleWebCode() {
+            const code = document.getElementById('webapp-code');
+            code.classList.toggle('hidden');
+            if (!code.classList.contains('hidden') && !code.textContent.trim()) buildWebPreview();
+        }
+        selectWebScenario('lunch');
+
+        // 2. Quiz Rendering and Submission Logic
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            quizData.forEach((item, idx) => {
+                const qNum = idx + 1;
+                const card = document.createElement('div');
+                card.className = "p-5 bg-slate-50 border border-slate-200 rounded-xl transition-all hover:border-slate-300";
+                card.id = `q-card-${idx}`;
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <span class="inline-block px-2 py-0.5 text-xs font-bold bg-slate-200 text-slate-700 rounded mb-2">문항 ${qNum}</span>
+                            <p class="text-sm font-semibold text-slate-800 leading-relaxed">${item.q}</p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button type="button" onclick="selectQuizAnswer(${idx}, 'O')" id="btn-q${idx}-O" class="w-12 h-12 rounded-xl font-black text-lg border-2 border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition-all flex items-center justify-center">O</button>
+                            <button type="button" onclick="selectQuizAnswer(${idx}, 'X')" id="btn-q${idx}-X" class="w-12 h-12 rounded-xl font-black text-lg border-2 border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition-all flex items-center justify-center">X</button>
+                        </div>
+                    </div>
+                    <div id="feedback-${idx}" class="mt-4 pt-3 border-t border-slate-200 text-xs sm:text-sm hidden">
+                        <div class="font-bold flex items-center gap-1.5" id="feedback-title-${idx}"></div>
+                        <div class="mt-1 text-slate-600 bg-white p-3 rounded-lg border border-slate-200 leading-relaxed">${item.exp}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectQuizAnswer(qIdx, choice) {
+            userAnswers[qIdx] = choice;
+            const btnO = document.getElementById(`btn-q${qIdx}-O`);
+            const btnX = document.getElementById(`btn-q${qIdx}-X`);
+
+            if (choice === 'O') {
+                btnO.className = "w-12 h-12 rounded-xl font-black text-lg border-2 border-blue-600 bg-blue-600 text-white transition-all flex items-center justify-center shadow-md";
+                btnX.className = "w-12 h-12 rounded-xl font-black text-lg border-2 border-slate-200 bg-white text-slate-600 transition-all flex items-center justify-center";
+            } else {
+                btnX.className = "w-12 h-12 rounded-xl font-black text-lg border-2 border-rose-600 bg-rose-600 text-white transition-all flex items-center justify-center shadow-md";
+                btnO.className = "w-12 h-12 rounded-xl font-black text-lg border-2 border-slate-200 bg-white text-slate-600 transition-all flex items-center justify-center";
+            }
+        }
+
+        function submitQuiz() {
+            const unanswered = userAnswers.findIndex(ans => ans === null);
+            if (unanswered !== -1) {
+                showToast(`문항 ${unanswered + 1}번에 답하지 않았습니다. 모든 문항을 풀어주세요.`, false);
+                return;
+            }
+
+            let score = 0;
+            quizData.forEach((item, idx) => {
+                const userAns = userAnswers[idx];
+                const feedbackBox = document.getElementById(`feedback-${idx}`);
+                const feedbackTitle = document.getElementById(`feedback-title-${idx}`);
+                const card = document.getElementById(`q-card-${idx}`);
+
+                feedbackBox.classList.remove('hidden');
+
+                if (userAns === item.a) {
+                    score += 10;
+                    feedbackTitle.innerHTML = `<span class="text-green-600"><i class="fas fa-check-circle"></i> 정답입니다! (선택: ${userAns})</span>`;
+                    card.className = "p-5 bg-green-50/50 border border-green-200 rounded-xl";
+                } else {
+                    feedbackTitle.innerHTML = `<span class="text-rose-600"><i class="fas fa-times-circle"></i> 오답입니다. (내가 선택한 답: ${userAns} / 정답: ${item.a})</span>`;
+                    card.className = "p-5 bg-rose-50/50 border border-rose-200 rounded-xl";
+                }
+            });
+
+            // Score Display
+            document.getElementById('quiz-score-display').innerText = `${score} / 100`;
+            const resultBox = document.getElementById('quiz-result-box');
+            resultBox.classList.remove('hidden');
+            document.getElementById('quiz-result-summary').innerHTML = `총 10문항 중 <strong>${score / 10}문항</strong>을 맞혀 총점 <strong>${score}점</strong>을 획득하셨습니다.`;
+
+            // Mark Quiz as completed
+            practiceStatus[1] = true;
+            document.getElementById('quiz-badge').classList.remove('hidden');
+            showToast("퀴즈가 채점되었습니다! 피드백을 확인하세요.");
+        }
+
+        // 3. Prompt Builder Logic (Tabs 2 to 5)
+        function updatePrompt(num) {
+            let text = "";
+            if (num === 2) {
+                const major = document.getElementById('p2-major').value || "컴퓨터공학과";
+                const grade = document.getElementById('p2-grade').value || "2학년";
+                const interest = document.getElementById('p2-interest').value || "AI와 의료 데이터 활용";
+
+                text = `[역할] 너는 고등학생의 진로 설계를 돕는 전문 진로진학 컨설턴트야.\n` +
+                       `[상황] 나는 [${major}] 진학을 희망하는 고등학교 [${grade}] 학생이야. 특히 [${interest}]에 깊은 관심이 있어.\n` +
+                       `[요청]\n` +
+                       `1. 고등학생 수준에서 탐구해 볼 만한 심화 탐구 주제 3가지를 제안해 줘.\n` +
+                       `2. 각 주제별로 함께 읽으면 좋은 추천 도서 1권과 탐구 방향을 간단히 설명해 줘.\n` +
+                       `[조건]\n` +
+                       `- 단순 이론 조사보다는 사회적 문제 해결이나 실생활 적용과 연결된 주제여야 해.\n` +
+                       `- AI 답변을 그대로 베끼지 않고, 내가 직접 자료 조사를 이어나갈 수 있도록 질문 형태의 힌트를 포함해 줘.`;
+                document.getElementById('p2-output').value = text;
+            } else if (num === 3) {
+                const subject = document.getElementById('p3-subject').value || "통합과학";
+                const concept = document.getElementById('p3-concept').value || "세포 호흡과 광합성의 차이점";
+                const analogy = document.getElementById('p3-analogy').value || "일상생활 속 예시";
+
+                text = `[역할] 너는 친절하고 능숙한 [${subject}] 선생님이야.\n` +
+                       `[상황] 나는 지금 [${concept}] 단원을 공부하고 있는데, 개념이 잘 이해되지 않아 어려움을 겪고 있어.\n` +
+                       `[요청]\n` +
+                       `1. 이 개념을 고등학생이 이해하기 쉽게 [${analogy}]를 들어 설명해 줘.\n` +
+                       `2. 내가 제대로 이해했는지 확인해 볼 수 있는 기초 점검 퀴즈 2문항(정답 및 해설 포함)을 만들어 줘.\n` +
+                       `[조건]\n` +
+                       `- 전문 용어만 나열하지 말고 단계별(Step-by-Step)로 나누어 설명해 줘.\n` +
+                       `- 수학/과학 공식이 있다면 공식이 의미하는 바를 말글로 풀어 설명해 줘.`;
+                document.getElementById('p3-output').value = text;
+            } else if (num === 4) {
+                const club = document.getElementById('p4-club').value || "유기동물 보호 동아리";
+                const goal = document.getElementById('p4-goal').value || "교내 잔반 줄이기 캠페인";
+                const media = document.getElementById('p4-media').value || "카드뉴스 4컷";
+
+                text = `[역할] 너는 고등학교 [${club}]의 아이디어 기획자야.\n` +
+                       `[상황] 우리 동아리에서는 이번에 [${goal}]을 기획하고 있어.\n` +
+                       `[요청]\n` +
+                       `1. 학생들이 흥미를 갖고 참여할 수 있는 창의적인 프로젝트 실행 아이디어 3가지를 제시해 줘.\n` +
+                       `2. 이 프로젝트를 홍보하기 위한 [${media}]의 초안 아웃라인을 작성해 줘.\n` +
+                       `[조건]\n` +
+                       `- 예산이 많이 들지 않고 학교 현장에서 실제로 실행 가능한 현실적인 아이디어여야 해.\n` +
+                       `- 타인의 저작권을 침해하지 않도록 독창적인 문구와 아이디어를 구성해 줘.`;
+                document.getElementById('p4-output').value = text;
+            } else if (num === 5) {
+                const agentname = document.getElementById('p5-agentname').value || "스마트 플래너 '알피'";
+                const grade = document.getElementById('p5-grade').value || "2학년";
+                const personality = document.getElementById('p5-personality').value || "친절하지만 꼼꼼하고 현실적인 피드백을 주는 다정한 선배";
+                const problem = document.getElementById('p5-problem').value || "시험 기간에 과목별 공부 시간 배분을 잘 못함";
+                const f1 = document.getElementById('p5-f1').value || "과목별 현실적인 타임테이블 작성";
+                const f2 = document.getElementById('p5-f2').value || "집중력 저하 시 5분 루틴 제시";
+                const f3 = document.getElementById('p5-f3').value || "학습 우선순위 점검 질문 제공";
+
+                text = `[역할 & 페르소나]\n` +
+                       `너는 고등학생의 학교생활을 돕는 전담 AI 에이전트인 '${agentname}'야.\n` +
+                       `너의 성격은 [${personality}] 느낌이야.\n\n` +
+                       `[나의 상황 및 문제점]\n` +
+                       `나는 고등학교 [${grade}] 학생이야. 현재 학교생활 중 [${problem}]에 대한 어려움을 겪고 있어.\n\n` +
+                       `[에이전트의 핵심 기능]\n` +
+                       `너는 나에게 다음과 같은 3가지 핵심 지원 방안을 제공해야 해.\n` +
+                       `1. [${f1}]\n` +
+                       `2. [${f2}]\n` +
+                       `3. [${f3}]\n\n` +
+                       `[행동 수칙 및 제한 규칙]\n` +
+                       `- 절대 지키지 못할 과도한 공부 계획을 세워주지 마.\n` +
+                       `- 비판이나 질책 대신 공감과 함께 현실적인 개선책을 제시해 줘.\n` +
+                       `- 개인정보나 사적인 비밀을 묻거나 저장하려고 하지 마.\n\n` +
+                       `[출력 양식]\n` +
+                       `대답을 시작할 때 나에게 친근한 인사를 건네고, 내용은 가독성이 좋게 표(Table)나 글머리 기호(Bullet point)로 정리해 줘.`;
+                document.getElementById('p5-output').value = text;
+            }
+        }
+
+        function copyPrompt(num) {
+            const textarea = document.getElementById(`p${num}-output`);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast(`실습 ${num}번 프롬프트가 클립보드에 복사되었습니다!`);
+                practiceStatus[num] = true;
+                
+                const badge = document.getElementById(`p${num}-badge`);
+                if (badge) badge.classList.remove('hidden');
+            } catch (err) {
+                showToast("복사에 실패했습니다. 수동으로 복사해주세요.", false);
+            }
+        }
+    </script>
+</body>
+</html>
